@@ -11,6 +11,7 @@ public class SnakeGame extends Applet implements Runnable, KeyListener {
     Thread thread;
     Snake snake;
     boolean gameOver;
+    Token token;
 
     public void init() {
         this.resize(400, 400);
@@ -19,13 +20,23 @@ public class SnakeGame extends Applet implements Runnable, KeyListener {
         gfx= img.getGraphics();
         this.addKeyListener(this);
         snake = new Snake();
+        token = new Token(snake);
         thread = new Thread(this);  //because its a runnable object
         thread.start();
     }
     public void paint(Graphics g) {
         gfx.setColor(Color.BLACK);
         gfx.fillRect(0,0,400,400);
-        snake.draw(gfx);
+        if(!gameOver){
+            snake.draw(gfx);
+            token.draw(gfx);
+        }
+        else {
+            gfx.setColor(Color.red);  //this will be for the game over text
+            gfx.drawString("Game Over", 180, 150);
+            gfx.drawString("Score :" + token.getScore(), 180, 170);
+        }
+
 
         g.drawImage(img,0,0, null);
     }
@@ -39,8 +50,12 @@ public class SnakeGame extends Applet implements Runnable, KeyListener {
     public void run() {
         for(;;){
 
-            snake.move();
-            this.checkGameOver();
+
+            if(!gameOver){
+                snake.move();
+                this.checkGameOver();
+                token.snakeCollision();
+            }
             this.repaint();
             try {
                 Thread.sleep(40);
@@ -54,6 +69,9 @@ public class SnakeGame extends Applet implements Runnable, KeyListener {
             gameOver = true;
         }
         if(snake.getY() < 0 || snake.getY() > 396){
+            gameOver = true;
+        }
+        if(snake.snakeCollision()){
             gameOver = true;
         }
     }
